@@ -12,15 +12,27 @@ export function getDb(): Database.Database {
   _db = new Database(DB_PATH)
   _db.pragma('journal_mode = WAL')
   initDb(_db)
+  migrateDb(_db)
   return _db
 }
 
 export function initDb(db: Database.Database): void {
   db.exec(`
+    CREATE TABLE IF NOT EXISTS documents (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      filename TEXT NOT NULL,
+      title TEXT NOT NULL,
+      page_count INTEGER NOT NULL DEFAULT 0,
+      char_count INTEGER NOT NULL DEFAULT 0,
+      content TEXT NOT NULL,
+      created_at INTEGER NOT NULL DEFAULT (unixepoch())
+    );
+
     CREATE TABLE IF NOT EXISTS sessions (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       topic TEXT NOT NULL,
       mode TEXT NOT NULL CHECK(mode IN ('tutor', 'agent')),
+      document_id INTEGER REFERENCES documents(id),
       started_at INTEGER NOT NULL DEFAULT (unixepoch()),
       ended_at INTEGER,
       duration_mins REAL
@@ -59,8 +71,28 @@ export function initDb(db: Database.Database): void {
   `)
 }
 
-export function createSession(db: Database.Database, opts: { topic: string; mode: 'tutor' | 'agent' }): number {
-  const result = db.prepare('INSERT INTO sessions (topic, mode) VALUES (?, ?)').run(opts.topic, opts.mode)
+function migrateDb(db: Database.Database): void {
+  // Add document_id to existing sessions tables that predate the documents feature
+  try {
+    db.exec('ALTER TABLE sessions ADD COLUMN document_id INTEGER REFERENCES documents(id)')
+  } catch {
+    // Column already exists — safe to ignore
+  }
+}
+
+export function saveDocument(db: Database.Database, opts: { filename: string; title: string; pageCount: number; content: string }): number {
+  const result = db.prepare(
+    'INSERT INTO documents (filename, title, page_count, char_count, content) VALUES (?, ?, ?, ?, ?)'
+  ).run(opts.filename, opts.title, opts.pageCount, opts.content.length, opts.content)
+  return result.lastInsertRowid as number
+}
+
+export function getDocument(db: Database.Database, id: number): { id: number; title: string; pageCount: number; content: string } | null {
+  return db.prepare('SELECT id, title, page_count as pageCount, content FROM documents WHERE id = ?').get(id) as { id: number; title: string; pageCount: number; content: string } | null
+}
+
+export function createSession(db: Database.Database, opts: { topic: string; mode: 'tutor' | 'agent'; documentId?: number }): number {
+  const result = db.prepare('INSERT INTO sessions (topic, mode, document_id) VALUES (?, ?, ?)').run(opts.topic, opts.mode, opts.documentId ?? null)
   return result.lastInsertRowid as number
 }
 

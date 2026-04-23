@@ -13,7 +13,9 @@ export const MAX_TOKENS = 1024
 
 const encoder = new TextEncoder()
 
-export function buildSystemPrompt(opts: { topic: string; mode: 'tutor' | 'agent' }): Anthropic.TextBlockParam[] {
+const MAX_DOC_CHARS = 200_000
+
+export function buildSystemPrompt(opts: { topic: string; mode: 'tutor' | 'agent'; documentContent?: string }): Anthropic.TextBlockParam[] {
   const persona = `You are an expert tutor helping a user with light ADHD learn about "${opts.topic}".
 Keep all responses concise — maximum 250 words per message. One idea per message. Never write walls of text.
 Always signal what comes next at the end of each message (e.g., "Next: I'll cover X" or "Ready for a quick quiz?").
@@ -24,17 +26,22 @@ Adapt to the user's pace. Be encouraging, clear, and direct.`
       ? `You are running in AGENT MODE. You drive the session autonomously. Plan a curriculum, deliver it in chunks, quiz the user between subtopics, and create flashcards. Use your tools proactively.`
       : `You are running in TUTOR MODE. Answer the user's questions, explain concepts clearly, and suggest moving forward when appropriate. When the user types /quiz, generate a quiz immediately.`
 
-  return [
-    {
-      type: 'text',
-      text: persona,
-    },
-    {
-      type: 'text',
-      text: modeInstructions,
-      cache_control: { type: 'ephemeral' },
-    },
-  ]
+  const blocks: Anthropic.TextBlockParam[] = [{ type: 'text', text: persona }]
+
+  if (opts.documentContent) {
+    const truncated = opts.documentContent.length > MAX_DOC_CHARS
+      ? opts.documentContent.slice(0, MAX_DOC_CHARS) + '\n\n[Document truncated — only first portion shown]'
+      : opts.documentContent
+    blocks.push({ type: 'text', text: `## Source Document\n\nThe user has uploaded a document for this session. Use it as your primary source material:\n\n${truncated}` })
+  }
+
+  blocks.push({
+    type: 'text',
+    text: modeInstructions,
+    cache_control: { type: 'ephemeral' },
+  })
+
+  return blocks
 }
 
 export function buildUserMessage(content: string): { role: 'user'; content: string } {

@@ -8,7 +8,7 @@ import { executeGenerateQuiz } from '@/lib/tools/generate_quiz'
 import { executeSetMusicMood } from '@/lib/tools/set_music_mood'
 import { executeMarkComplete } from '@/lib/tools/mark_complete'
 import { executeCreateFlashcard } from '@/lib/tools/create_flashcard'
-import { getDb } from '@/lib/db'
+import { getDb, getDocument } from '@/lib/db'
 import type Anthropic from '@anthropic-ai/sdk'
 import type { Mood } from '@/lib/music'
 
@@ -18,6 +18,7 @@ interface AgentRequest {
   topic: string
   durationMins: number
   sessionId: number
+  documentId?: number
 }
 
 type ToolInput = Record<string, unknown>
@@ -44,10 +45,12 @@ async function executeTool(name: string, input: ToolInput, sessionId: number, db
 }
 
 export async function POST(req: NextRequest) {
-  const { topic, durationMins, sessionId } = await req.json() as AgentRequest
+  const { topic, durationMins, sessionId, documentId } = await req.json() as AgentRequest
+
+  const documentContent = documentId ? getDocument(getDb(), documentId)?.content : undefined
 
   return makeSSEStream(async (controller) => {
-    const system = buildSystemPrompt({ topic, mode: 'agent' })
+    const system = buildSystemPrompt({ topic, mode: 'agent', documentContent })
     const messages: Anthropic.MessageParam[] = [
       {
         role: 'user',

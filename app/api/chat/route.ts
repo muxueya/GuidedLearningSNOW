@@ -1,18 +1,22 @@
 import { NextRequest } from 'next/server'
 import { getAnthropic, MODEL, MAX_TOKENS, buildSystemPrompt, makeSSEStream, send } from '@/lib/claude'
+import { getDb, getDocument } from '@/lib/db'
 import type Anthropic from '@anthropic-ai/sdk'
 
 interface ChatRequest {
   topic: string
+  documentId?: number
   messages: Array<{ role: 'user' | 'assistant'; content: string }>
 }
 
 export async function POST(req: NextRequest) {
-  const { topic, messages } = await req.json() as ChatRequest
+  const { topic, documentId, messages } = await req.json() as ChatRequest
+
+  const documentContent = documentId ? getDocument(getDb(), documentId)?.content : undefined
 
   return makeSSEStream(async (controller) => {
     try {
-      const system = buildSystemPrompt({ topic, mode: 'tutor' })
+      const system = buildSystemPrompt({ topic, mode: 'tutor', documentContent })
       const stream = getAnthropic().messages.stream({
         model: MODEL,
         max_tokens: MAX_TOKENS,

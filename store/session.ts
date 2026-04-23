@@ -17,6 +17,8 @@ interface SessionState {
   topic: string
   mode: AppMode
   sessionId: number | null
+  documentId: number | null
+  documentTitle: string
   messages: Message[]
   steps: SessionStep[]
   currentStepIndex: number
@@ -24,6 +26,8 @@ interface SessionState {
   setTopic: (topic: string) => void
   setMode: (mode: AppMode) => void
   setSessionId: (id: number) => void
+  setDocument: (id: number, title: string) => void
+  clearDocument: () => void
   addMessage: (msg: Omit<Message, 'id'>) => void
   setSteps: (steps: string[]) => void
   advanceStep: () => void
@@ -35,6 +39,8 @@ export const useSessionStore = create<SessionState>((set) => ({
   topic: '',
   mode: 'tutor',
   sessionId: null,
+  documentId: null,
+  documentTitle: '',
   messages: [],
   steps: [],
   currentStepIndex: 0,
@@ -42,6 +48,8 @@ export const useSessionStore = create<SessionState>((set) => ({
   setTopic: (topic) => set({ topic }),
   setMode: (mode) => set({ mode }),
   setSessionId: (id) => set({ sessionId: id }),
+  setDocument: (id, title) => set({ documentId: id, documentTitle: title }),
+  clearDocument: () => set({ documentId: null, documentTitle: '' }),
   addMessage: (msg) =>
     set((s) => ({
       messages: [...s.messages, { ...msg, id: crypto.randomUUID() }],

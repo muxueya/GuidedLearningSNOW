@@ -13,7 +13,7 @@ import type { Mood } from '@/lib/music'
 interface QuizQuestion { question: string; answer: string }
 
 function SessionPageInner() {
-  const { topic, mode, sessionId, messages, addMessage, setSteps, advanceStep, setStreaming, isStreaming, steps } = useSessionStore()
+  const { topic, mode, sessionId, documentId, messages, addMessage, setSteps, advanceStep, setStreaming, isStreaming, steps } = useSessionStore()
   const { setMood } = useAudioStore()
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -51,7 +51,7 @@ function SessionPageInner() {
       const res = await fetch('/api/agent', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ topic, sessionId, durationMins }),
+        body: JSON.stringify({ topic, sessionId, durationMins, documentId: documentId ?? undefined }),
       })
       await readSSEStream(res)
     } catch (err) {
@@ -67,7 +67,7 @@ function SessionPageInner() {
     const res = await fetch('/api/chat', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ topic, messages: msgs }),
+      body: JSON.stringify({ topic, documentId: documentId ?? undefined, messages: msgs }),
     })
     await readSSEStream(res)
     setStreaming(false)

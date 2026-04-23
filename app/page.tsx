@@ -5,11 +5,12 @@ import Link from 'next/link'
 import { useSessionStore } from '@/store/session'
 import { ModeToggle } from '@/components/ModeToggle'
 import { MusicPlayer } from '@/components/MusicPlayer'
+import { PdfUpload } from '@/components/PdfUpload'
 
 export default function HomePage() {
   const [topic, setTopic] = useState('')
   const [duration, setDuration] = useState(20)
-  const { mode, setTopic: storeTopic, setSessionId, reset } = useSessionStore()
+  const { mode, documentId, documentTitle, setTopic: storeTopic, setSessionId, reset } = useSessionStore()
   const router = useRouter()
 
   const start = async () => {
@@ -20,7 +21,7 @@ export default function HomePage() {
       const res = await fetch('/api/sessions', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ topic, mode }),
+        body: JSON.stringify({ topic, mode, documentId: documentId ?? undefined }),
       })
       if (!res.ok) throw new Error('Failed to create session')
       const { sessionId } = await res.json() as { sessionId: number }
@@ -44,10 +45,13 @@ export default function HomePage() {
           value={topic}
           onChange={(e) => setTopic(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && start()}
-          placeholder="What do you want to learn today?"
+          placeholder={documentTitle ? `Focus area within "${documentTitle}"…` : 'What do you want to learn today?'}
           className="w-full px-4 py-3 rounded-xl bg-white/10 text-white placeholder-gray-500 border border-white/10 outline-none focus:ring-2 focus:ring-indigo-400 text-base"
           autoFocus
         />
+
+        <PdfUpload />
+
         <div className="flex items-center justify-between gap-4">
           <ModeToggle />
           {mode === 'agent' && (

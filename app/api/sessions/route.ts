@@ -5,10 +5,12 @@ export async function POST(req: NextRequest) {
   let topic: string
   let mode: 'tutor' | 'agent'
 
+  let documentId: number | undefined
   try {
-    const body = await req.json() as { topic?: string; mode?: string }
+    const body = await req.json() as { topic?: string; mode?: string; documentId?: number }
     topic = typeof body.topic === 'string' ? body.topic.trim() : ''
     mode = body.mode === 'agent' ? 'agent' : 'tutor'
+    documentId = typeof body.documentId === 'number' ? body.documentId : undefined
   } catch {
     return NextResponse.json({ error: 'Invalid request body' }, { status: 400 })
   }
@@ -19,7 +21,7 @@ export async function POST(req: NextRequest) {
 
   try {
     const db = getDb()
-    const sessionId = createSession(db, { topic, mode })
+    const sessionId = createSession(db, { topic, mode, documentId })
     return NextResponse.json({ sessionId }, { status: 201 })
   } catch (err) {
     console.error('Failed to create session:', err)
