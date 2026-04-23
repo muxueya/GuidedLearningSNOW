@@ -54,7 +54,7 @@ export default function DashboardPage() {
                         <div className="flex-1 h-2 bg-gray-700 rounded-full overflow-hidden">
                           <div
                             className="h-full bg-indigo-500 rounded-full transition-all"
-                            style={{ width: `${topic.averageScore}%` }}
+                            style={{ width: `${Math.min(100, Math.max(0, topic.averageScore))}%` }}
                           />
                         </div>
                         <span className="text-sm text-indigo-400 font-semibold w-10 text-right">{topic.averageScore}%</span>
