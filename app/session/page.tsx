@@ -13,7 +13,7 @@ import type { Mood } from '@/lib/music'
 interface QuizQuestion { question: string; answer: string }
 
 export default function SessionPage() {
-  const { topic, mode, sessionId, messages, addMessage, setSteps, advanceStep, setStreaming, isStreaming } = useSessionStore()
+  const { topic, mode, sessionId, messages, addMessage, setSteps, advanceStep, setStreaming, isStreaming, steps } = useSessionStore()
   const { setMood } = useAudioStore()
   const router = useRouter()
   const [input, setInput] = useState('')
@@ -35,17 +35,25 @@ export default function SessionPage() {
 
   async function startTutorSession() {
     setSteps(['Introduction', 'Deep Dive', 'Quiz', 'Summary'])
-    await streamChat([{ role: 'user', content: `Start teaching me about "${topic}". Begin with a brief introduction.` }])
+    try {
+      await streamChat([{ role: 'user', content: `Start teaching me about "${topic}". Begin with a brief introduction.` }])
+    } catch (err) {
+      console.error('Tutor session error:', err)
+    }
   }
 
   async function startAgentSession() {
     if (!sessionId) return
-    const res = await fetch('/api/agent', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ topic, sessionId, durationMins: 20 }),
-    })
-    await readSSEStream(res)
+    try {
+      const res = await fetch('/api/agent', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ topic, sessionId, durationMins: 20 }),
+      })
+      await readSSEStream(res)
+    } catch (err) {
+      console.error('Agent session error:', err)
+    }
   }
 
   async function streamChat(msgs: Array<{ role: 'user' | 'assistant'; content: string }>) {
@@ -61,7 +69,8 @@ export default function SessionPage() {
   }
 
   async function readSSEStream(res: Response) {
-    const reader = res.body!.getReader()
+    if (!res.body) return
+    const reader = res.body.getReader()
     const decoder = new TextDecoder()
     let accumulated = ''
 
@@ -96,7 +105,9 @@ export default function SessionPage() {
             }
             advanceStep()
           }
-        } catch {}
+        } catch {
+          // skip malformed SSE line
+        }
       }
     }
   }
@@ -108,7 +119,7 @@ export default function SessionPage() {
     addMessage({ role: 'user', content: text })
 
     if (text === '/quiz') {
-      setSteps([...useSessionStore.getState().steps.map(s => s.label), 'Quiz'])
+      setSteps([...steps.map(s => s.label), 'Quiz'])
     }
 
     await streamChat([

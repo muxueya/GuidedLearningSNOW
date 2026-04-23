@@ -9,16 +9,26 @@ import { MusicPlayer } from '@/components/MusicPlayer'
 export default function HomePage() {
   const [topic, setTopic] = useState('')
   const [duration, setDuration] = useState(20)
-  const { mode, setTopic: storeTopic } = useSessionStore()
+  const { mode, setTopic: storeTopic, setSessionId } = useSessionStore()
   const router = useRouter()
 
   const start = async () => {
     if (!topic.trim()) return
     storeTopic(topic.trim())
-    const res = await fetch('/api/sessions', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ topic, mode }) })
-    const { sessionId } = await res.json() as { sessionId: number }
-    useSessionStore.getState().setSessionId(sessionId)
-    router.push(`/session?duration=${duration}`)
+    try {
+      const res = await fetch('/api/sessions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ topic, mode }),
+      })
+      if (!res.ok) throw new Error('Failed to create session')
+      const { sessionId } = await res.json() as { sessionId: number }
+      setSessionId(sessionId)
+      router.push(`/session?duration=${duration}`)
+    } catch (err) {
+      console.error('Failed to start session:', err)
+      alert('Failed to start session. Please try again.')
+    }
   }
 
   return (
