@@ -72,7 +72,7 @@ export default function SessionPage() {
       for (const line of chunk.split('\n')) {
         if (!line.startsWith('data: ')) continue
         try {
-          const event = JSON.parse(line.slice(6)) as { type: string; text?: string; mood?: Mood }
+          const event = JSON.parse(line.slice(6)) as { type: string; text?: string; mood?: Mood; questions?: QuizQuestion[] }
           if (event.type === 'delta' && event.text) {
             accumulated += event.text
             setStreamingText(accumulated)
@@ -84,13 +84,17 @@ export default function SessionPage() {
           if (event.type === 'music_mood' && event.mood) {
             setMood(event.mood)
           }
+          if (event.type === 'quiz' && event.questions?.length) {
+            setQuiz(event.questions)
+            setQuizIndex(0)
+          }
           if (event.type === 'done') {
             if (accumulated) {
               addMessage({ role: 'assistant', content: accumulated })
               setStreamingText('')
               accumulated = ''
-              advanceStep()
             }
+            advanceStep()
           }
         } catch {}
       }
