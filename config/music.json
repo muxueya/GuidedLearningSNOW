@@ -1,0 +1,30 @@
+{
+  "moods": {
+    "focus": {
+      "label": "Deep Focus",
+      "keywords": ["专注", "纯音乐", "study instrumental"],
+      "playlistIds": []
+    },
+    "chill": {
+      "label": "Lo-fi Chill",
+      "keywords": ["lofi", "放松", "轻音乐"],
+      "playlistIds": []
+    },
+    "upbeat": {
+      "label": "Upbeat",
+      "keywords": ["欢快", "轻快", "positive"],
+      "playlistIds": []
+    },
+    "ambient": {
+      "label": "Ambient",
+      "keywords": ["冥想", "自然声音", "ambient"],
+      "playlistIds": []
+    }
+  },
+  "modeDefaults": {
+    "agent": "focus",
+    "tutor": "chill",
+    "quiz": "upbeat",
+    "break": "ambient"
+  }
+}
