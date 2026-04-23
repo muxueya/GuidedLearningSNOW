@@ -1,5 +1,4 @@
-import fs from 'fs'
-import path from 'path'
+import ankiConfigData from '../config/anki.json'
 
 interface AnkiConfig {
   deck: string
@@ -8,10 +7,7 @@ interface AnkiConfig {
   backField: string
 }
 
-function loadConfig(): AnkiConfig {
-  const raw = fs.readFileSync(path.join(process.cwd(), 'config', 'anki.json'), 'utf-8')
-  return JSON.parse(raw)
-}
+const ankiConfig: AnkiConfig = ankiConfigData
 
 const ANKICONNECT_URL = 'http://localhost:8765'
 
@@ -22,17 +18,16 @@ interface AnkiPayload {
 }
 
 export function buildAddNotePayload(opts: { front: string; back: string }): AnkiPayload {
-  const config = loadConfig()
   return {
     action: 'addNote',
     version: 6,
     params: {
       note: {
-        deckName: config.deck,
-        modelName: config.model,
+        deckName: ankiConfig.deck,
+        modelName: ankiConfig.model,
         fields: {
-          [config.frontField]: opts.front,
-          [config.backField]: opts.back,
+          [ankiConfig.frontField]: opts.front,
+          [ankiConfig.backField]: opts.back,
         },
         options: { allowDuplicate: false },
         tags: ['guided-learning'],
@@ -62,5 +57,7 @@ export async function ensureDeckExists(deckName: string): Promise<void> {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ action: 'createDeck', version: 6, params: { deck: deckName } }),
-  }).catch(() => {})
+  }).catch((err) => {
+    console.warn('[AnkiConnect] ensureDeckExists failed:', err)
+  })
 }

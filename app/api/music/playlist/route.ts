@@ -3,7 +3,9 @@ import { getMoodKeywords, searchPlaylists, getPlaylistTracks } from '@/lib/music
 import type { Mood } from '@/lib/music'
 
 export async function GET(req: NextRequest) {
-  const mood = (req.nextUrl.searchParams.get('mood') ?? 'chill') as Mood
+  const VALID_MOODS: Mood[] = ['focus', 'chill', 'upbeat', 'ambient']
+  const rawMood = req.nextUrl.searchParams.get('mood') ?? 'chill'
+  const mood: Mood = VALID_MOODS.includes(rawMood as Mood) ? (rawMood as Mood) : 'chill'
   const keywords = getMoodKeywords(mood)
   const keyword = keywords[Math.floor(Math.random() * keywords.length)]
   const playlists = await searchPlaylists(keyword, 5)
