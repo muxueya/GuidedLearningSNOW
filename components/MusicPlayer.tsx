@@ -6,10 +6,12 @@ import type { Mood } from '@/lib/music'
 
 async function fetchTrackForMood(mood: Mood): Promise<{ id: number; name: string; artist: string; url: string } | null> {
   const playlistRes = await fetch(`/api/music/playlist?mood=${mood}`)
+  if (!playlistRes.ok) return null
   const { tracks } = await playlistRes.json() as { tracks: Array<{ id: number; name: string; ar: Array<{ name: string }> }> }
   if (!tracks?.length) return null
   const track = tracks[Math.floor(Math.random() * tracks.length)]
   const urlRes = await fetch(`/api/music/url?id=${track.id}`)
+  if (!urlRes.ok) return null
   const { url } = await urlRes.json() as { url: string | null }
   if (!url) return null
   return { id: track.id, name: track.name, artist: track.ar[0]?.name ?? 'Unknown', url }
@@ -18,21 +20,36 @@ async function fetchTrackForMood(mood: Mood): Promise<{ id: number; name: string
 export function MusicPlayer() {
   const { mood, track, isPlaying, volume, initialized, setTrack, setPlaying, setVolume, setInitialized } = useAudioStore()
   const howlRef = useRef<Howl | null>(null)
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const volumeRef = useRef(volume)
+
+  useEffect(() => { volumeRef.current = volume }, [volume])
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (timerRef.current) clearTimeout(timerRef.current)
+      howlRef.current?.unload()
+      howlRef.current = null
+    }
+  }, [])
 
   const loadAndPlay = useCallback(async (m: Mood) => {
     const newTrack = await fetchTrackForMood(m)
     if (!newTrack) return
-    howlRef.current?.fade(volume, 0, 500)
-    setTimeout(() => {
+    howlRef.current?.fade(volumeRef.current, 0, 500)
+    if (timerRef.current) clearTimeout(timerRef.current)
+    timerRef.current = setTimeout(() => {
       howlRef.current?.unload()
       const howl = new Howl({ src: [newTrack.url], html5: true, volume: 0 })
-      howl.once('play', () => howl.fade(0, volume, 2000))
+      howl.once('play', () => howl.fade(0, volumeRef.current, 2000))
+      howl.on('end', () => setPlaying(false))
       howl.play()
       howlRef.current = howl
       setTrack(newTrack)
       setPlaying(true)
     }, 600)
-  }, [volume, setTrack, setPlaying])
+  }, [setTrack, setPlaying])
 
   useEffect(() => {
     if (initialized) loadAndPlay(mood)
@@ -44,7 +61,6 @@ export function MusicPlayer() {
 
   const handleInit = () => {
     setInitialized()
-    loadAndPlay(mood)
   }
 
   const togglePlay = () => {
@@ -66,7 +82,7 @@ export function MusicPlayer() {
 
   return (
     <div className="flex items-center gap-3 px-4 py-2 rounded-full bg-white/10 backdrop-blur text-sm text-white">
-      <button onClick={togglePlay} className="text-lg">
+      <button onClick={togglePlay} aria-label={isPlaying ? 'Pause' : 'Play'} className="text-lg">
         {isPlaying ? '⏸' : '▶️'}
       </button>
       <div className="truncate max-w-[160px]">
@@ -77,6 +93,7 @@ export function MusicPlayer() {
         value={volume}
         onChange={(e) => setVolume(Number(e.target.value))}
         className="w-16 accent-indigo-400"
+        aria-label="Volume"
       />
     </div>
   )

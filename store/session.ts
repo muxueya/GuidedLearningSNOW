@@ -54,5 +54,5 @@ export const useSessionStore = create<SessionState>((set) => ({
       return { steps, currentStepIndex: Math.min(s.currentStepIndex + 1, steps.length - 1) }
     }),
   setStreaming: (v) => set({ isStreaming: v }),
-  reset: () => set({ messages: [], steps: [], currentStepIndex: 0, sessionId: null, isStreaming: false }),
+  reset: () => set({ topic: '', mode: 'tutor', messages: [], steps: [], currentStepIndex: 0, sessionId: null, isStreaming: false }),
 }))

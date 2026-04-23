@@ -10,8 +10,15 @@ interface Props {
 export function QuizCard({ question, answer, onResult }: Props) {
   const [userAnswer, setUserAnswer] = useState('')
   const [revealed, setRevealed] = useState(false)
+  const [submitted, setSubmitted] = useState(false)
 
   const reveal = () => setRevealed(true)
+
+  const handleResult = (correct: boolean) => {
+    if (submitted) return
+    setSubmitted(true)
+    onResult(correct)
+  }
 
   return (
     <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-gray-700 max-w-2xl w-full space-y-4">
@@ -21,6 +28,7 @@ export function QuizCard({ question, answer, onResult }: Props) {
         onChange={(e) => setUserAnswer(e.target.value)}
         disabled={revealed}
         placeholder="Your answer..."
+        aria-label="Your answer"
         className="w-full rounded-lg border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 p-3 text-sm resize-none h-24 outline-none focus:ring-2 focus:ring-indigo-400"
       />
       {!revealed ? (
@@ -33,10 +41,18 @@ export function QuizCard({ question, answer, onResult }: Props) {
             <p className="text-sm text-green-800 dark:text-green-300"><strong>Answer:</strong> {answer}</p>
           </div>
           <div className="flex gap-2">
-            <button onClick={() => onResult(true)} className="px-4 py-2 bg-green-600 text-white rounded-lg text-sm hover:bg-green-700 transition-colors">
+            <button
+              onClick={() => handleResult(true)}
+              disabled={submitted}
+              className="px-4 py-2 bg-green-600 text-white rounded-lg text-sm hover:bg-green-700 transition-colors disabled:opacity-50"
+            >
               ✓ Got it
             </button>
-            <button onClick={() => onResult(false)} className="px-4 py-2 bg-red-100 text-red-700 rounded-lg text-sm hover:bg-red-200 dark:bg-red-900/30 dark:text-red-400 transition-colors">
+            <button
+              onClick={() => handleResult(false)}
+              disabled={submitted}
+              className="px-4 py-2 bg-red-100 text-red-700 rounded-lg text-sm hover:bg-red-200 dark:bg-red-900/30 dark:text-red-400 transition-colors disabled:opacity-50"
+            >
               ✗ Missed
             </button>
           </div>
