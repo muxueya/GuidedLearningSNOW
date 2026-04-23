@@ -39,3 +39,17 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Claude Code local settings
+.claude/settings.local.json
+
+# Visual brainstorming companion
+.superpowers/
+
+# Local database
+data/
+*.sqlite
+*.db
+
+# NetEase cookie
+.netease_cookie
