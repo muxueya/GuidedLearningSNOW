@@ -9,13 +9,14 @@ import { MusicPlayer } from '@/components/MusicPlayer'
 export default function HomePage() {
   const [topic, setTopic] = useState('')
   const [duration, setDuration] = useState(20)
-  const { mode, setTopic: storeTopic, setSessionId } = useSessionStore()
+  const { mode, setTopic: storeTopic, setSessionId, reset } = useSessionStore()
   const router = useRouter()
 
   const start = async () => {
     if (!topic.trim()) return
-    storeTopic(topic.trim())
     try {
+      reset()
+      storeTopic(topic.trim())
       const res = await fetch('/api/sessions', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

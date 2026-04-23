@@ -57,8 +57,14 @@ export async function POST(req: NextRequest) {
 
     const db = getDb()
     let continueLoop = true
+    let iterations = 0
+    const MAX_ITERATIONS = 20
 
     while (continueLoop) {
+      if (++iterations > MAX_ITERATIONS) {
+        send(controller, { type: 'error', message: 'Agent reached maximum iterations' })
+        break
+      }
       let response: Anthropic.Message
       try {
         response = await getAnthropic().messages.create({

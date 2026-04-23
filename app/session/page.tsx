@@ -1,6 +1,6 @@
 'use client'
-import { useEffect, useRef, useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useEffect, useRef, useState, Suspense } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { useSessionStore } from '@/store/session'
 import { useAudioStore } from '@/store/audio'
 import { ContentChunk } from '@/components/ContentChunk'
@@ -12,10 +12,12 @@ import type { Mood } from '@/lib/music'
 
 interface QuizQuestion { question: string; answer: string }
 
-export default function SessionPage() {
+function SessionPageInner() {
   const { topic, mode, sessionId, messages, addMessage, setSteps, advanceStep, setStreaming, isStreaming, steps } = useSessionStore()
   const { setMood } = useAudioStore()
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const durationMins = Number(searchParams.get('duration') ?? '20') || 20
   const [input, setInput] = useState('')
   const [streamingText, setStreamingText] = useState('')
   const [quiz, setQuiz] = useState<QuizQuestion[]>([])
@@ -44,15 +46,18 @@ export default function SessionPage() {
 
   async function startAgentSession() {
     if (!sessionId) return
+    setStreaming(true)
     try {
       const res = await fetch('/api/agent', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ topic, sessionId, durationMins: 20 }),
+        body: JSON.stringify({ topic, sessionId, durationMins }),
       })
       await readSSEStream(res)
     } catch (err) {
       console.error('Agent session error:', err)
+    } finally {
+      setStreaming(false)
     }
   }
 
@@ -176,5 +181,13 @@ export default function SessionPage() {
         )}
       </main>
     </FocusMode>
+  )
+}
+
+export default function SessionPage() {
+  return (
+    <Suspense>
+      <SessionPageInner />
+    </Suspense>
   )
 }
