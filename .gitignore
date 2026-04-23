@@ -44,6 +44,9 @@ coverage/
 # Claude Code local settings
 .claude/settings.local.json
 
+# Visual brainstorming companion
+.superpowers/
+
 # Local database
 *.sqlite
 *.db
