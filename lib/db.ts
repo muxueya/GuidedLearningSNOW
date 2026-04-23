@@ -4,12 +4,15 @@ import fs from 'fs'
 
 const DB_PATH = path.join(process.cwd(), 'data', 'guided-learning.db')
 
+let _db: Database.Database | null = null
+
 export function getDb(): Database.Database {
+  if (_db) return _db
   fs.mkdirSync(path.dirname(DB_PATH), { recursive: true })
-  const db = new Database(DB_PATH)
-  db.pragma('journal_mode = WAL')
-  initDb(db)
-  return db
+  _db = new Database(DB_PATH)
+  _db.pragma('journal_mode = WAL')
+  initDb(_db)
+  return _db
 }
 
 export function initDb(db: Database.Database): void {
@@ -95,7 +98,7 @@ export function getTopicProgress(db: Database.Database, topicId: number): { aver
 export function getAllTopicsWithProgress(db: Database.Database): Array<{ id: number; name: string; averageScore: number; sessionCount: number }> {
   return db.prepare(`
     SELECT t.id, t.name,
-      ROUND(AVG(p.score), 0) as averageScore,
+      COALESCE(ROUND(AVG(p.score), 0), 0) as averageScore,
       COUNT(p.id) as sessionCount
     FROM topics t
     LEFT JOIN progress p ON p.topic_id = t.id
