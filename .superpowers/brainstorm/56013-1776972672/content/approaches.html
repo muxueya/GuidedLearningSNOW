@@ -1,0 +1,40 @@
+<h2>Architecture Approaches</h2>
+<p class="subtitle">Choose the foundation for the Guided Learning tool</p>
+
+<div class="options">
+  <div class="option" data-choice="a" onclick="toggleSelect(this)">
+    <div class="letter">A</div>
+    <div class="content">
+      <h3>Pure SPA — Vite + React (client-only)</h3>
+      <p>Claude API called directly from the browser. API key in <code>.env</code>. All state in Zustand + IndexedDB. Tone.js for audio. Agent tools limited to browser-safe operations.</p>
+      <div class="pros-cons" style="margin-top:10px">
+        <div class="pros"><h4>Pros</h4><ul><li>Simplest setup</li><li>Single <code>npm run dev</code></li><li>No backend at all</li></ul></div>
+        <div class="cons"><h4>Cons</h4><ul><li>API key visible in browser bundle</li><li>Agent tools limited (no web search)</li><li>Streaming requires CORS proxy workaround</li></ul></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="option" data-choice="b" onclick="toggleSelect(this)">
+    <div class="letter">B</div>
+    <div class="content">
+      <h3>⭐ Next.js Full-Stack (recommended)</h3>
+      <p>Single repo. React frontend + API routes handle all Claude calls server-side. API key never leaves the server. Agent tools run on the server (web search, file I/O). Single <code>npm run dev</code> starts everything.</p>
+      <div class="pros-cons" style="margin-top:10px">
+        <div class="pros"><h4>Pros</h4><ul><li>API key stays secure</li><li>Rich agent tools (web search, notes)</li><li>Streaming via Server-Sent Events</li><li>One command to run</li></ul></div>
+        <div class="cons"><h4>Cons</h4><ul><li>Next.js has some framework opinionation</li><li>Slightly heavier than bare Vite</li></ul></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="option" data-choice="c" onclick="toggleSelect(this)">
+    <div class="letter">C</div>
+    <div class="content">
+      <h3>Vite SPA + Separate Express API</h3>
+      <p>Two separate processes: Vite dev server for frontend, Express/Fastify for the Claude API layer and tools. Most flexible and explicit separation.</p>
+      <div class="pros-cons" style="margin-top:10px">
+        <div class="pros"><h4>Pros</h4><ul><li>Clear frontend/backend separation</li><li>Easy to swap backend later</li><li>Full tool execution support</li></ul></div>
+        <div class="cons"><h4>Cons</h4><ul><li>Two processes to run</li><li>More boilerplate</li><li>No real advantage over Next.js for a personal tool</li></ul></div>
+      </div>
+    </div>
+  </div>
+</div>

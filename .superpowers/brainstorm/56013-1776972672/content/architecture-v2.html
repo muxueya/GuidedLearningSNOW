@@ -1,0 +1,134 @@
+<h2>System Architecture v2 — with NetEase Cloud Music</h2>
+<p class="subtitle">Updated audio layer: NetEase playlists replace Tone.js synthesis</p>
+
+<div style="font-family: monospace; font-size: 13px; line-height: 1.7; background: #0f0f1a; color: #e0e0f0; padding: 28px 32px; border-radius: 12px; margin: 16px 0; border: 1px solid #2a2a4a;">
+
+<div style="color:#7c6af7; font-weight:bold; margin-bottom:16px; font-size:15px;">┌─────────────── BROWSER ────────────────────────────────────┐</div>
+
+<div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-left: 16px; margin-bottom: 16px;">
+  <div style="border:1px solid #4a3a8a; border-radius:8px; padding:12px; background:#1a1a2e;">
+    <div style="color:#a78bfa; font-weight:bold; margin-bottom:6px;">🖥 UI Layer</div>
+    <div style="color:#9090b0; font-size:12px;">Session View</div>
+    <div style="color:#9090b0; font-size:12px;">Content Chunks</div>
+    <div style="color:#9090b0; font-size:12px;">Progress Bar</div>
+    <div style="color:#9090b0; font-size:12px;">Mode Toggle</div>
+    <div style="color:#9090b0; font-size:12px;">Quiz View</div>
+    <div style="color:#9090b0; font-size:12px;">Music Mini-Player</div>
+  </div>
+  <div style="border:1px solid #3a6a3a; border-radius:8px; padding:12px; background:#1a2e1a;">
+    <div style="color:#6bdb6b; font-weight:bold; margin-bottom:6px;">🎵 Audio Player</div>
+    <div style="color:#6bdb6b; font-size:11px; margin-bottom:4px;">Howler.js</div>
+    <div style="color:#9090b0; font-size:12px;">Streams track URL</div>
+    <div style="color:#9090b0; font-size:12px;">Play / pause / skip</div>
+    <div style="color:#9090b0; font-size:12px;">Volume & fade</div>
+    <div style="color:#9090b0; font-size:12px;">Shows track name</div>
+    <div style="color:#4a7a4a; font-size:11px; margin-top:6px;">No synthesis — just playback</div>
+  </div>
+  <div style="border:1px solid #6a4a1a; border-radius:8px; padding:12px; background:#2e1a0a;">
+    <div style="color:#fbbf24; font-weight:bold; margin-bottom:6px;">⚡ Client State</div>
+    <div style="color:#9090b0; font-size:12px;">Zustand</div>
+    <div style="color:#9090b0; font-size:12px;">Session state</div>
+    <div style="color:#9090b0; font-size:12px;">Current mode</div>
+    <div style="color:#9090b0; font-size:12px;">Now playing</div>
+    <div style="color:#9090b0; font-size:12px;">UI state</div>
+  </div>
+</div>
+
+<div style="text-align:center; color:#5050a0; margin: 4px 0 8px 0;">↕ HTTP / SSE streaming</div>
+
+<div style="color:#7c6af7; font-weight:bold; margin-bottom:12px; font-size:15px;">┌─────────────── NEXT.JS SERVER (localhost) ─────────────────┐</div>
+
+<div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-left: 16px; margin-bottom: 16px;">
+  <div style="border:1px solid #4a1a6a; border-radius:8px; padding:12px; background:#2e0a3e;">
+    <div style="color:#c084fc; font-weight:bold; margin-bottom:8px;">🤖 AI Routes</div>
+    <div style="color:#9090b0; font-size:12px; margin-bottom:4px;"><span style="color:#c084fc">/api/chat</span> — Tutor</div>
+    <div style="color:#9090b0; font-size:12px; padding-left:10px;">Streaming SSE</div>
+    <div style="color:#9090b0; font-size:12px; padding-left:10px;">Message history</div>
+    <div style="color:#9090b0; font-size:12px; margin-top:8px; margin-bottom:4px;"><span style="color:#c084fc">/api/agent</span> — Agent</div>
+    <div style="color:#9090b0; font-size:12px; padding-left:10px;">tool_use loop</div>
+    <div style="color:#9090b0; font-size:12px; padding-left:10px;">Drives curriculum</div>
+  </div>
+
+  <div style="border:1px solid #1a4a6a; border-radius:8px; padding:12px; background:#0a2e3e;">
+    <div style="color:#38bdf8; font-weight:bold; margin-bottom:8px;">🔧 Agent Tools</div>
+    <div style="color:#9090b0; font-size:12px; margin-bottom:3px;"><span style="color:#38bdf8">search_web</span></div>
+    <div style="color:#9090b0; font-size:12px; margin-bottom:3px;"><span style="color:#38bdf8">save_note</span></div>
+    <div style="color:#9090b0; font-size:12px; margin-bottom:3px;"><span style="color:#38bdf8">get_progress</span></div>
+    <div style="color:#9090b0; font-size:12px; margin-bottom:3px;"><span style="color:#38bdf8">generate_quiz</span></div>
+    <div style="color:#9090b0; font-size:12px; margin-bottom:3px;"><span style="color:#38bdf8">set_music_mood</span></div>
+    <div style="color:#9090b0; font-size:12px; margin-bottom:3px;"><span style="color:#38bdf8">mark_complete</span></div>
+  </div>
+
+  <div style="border:1px solid #3a6a1a; border-radius:8px; padding:12px; background:#1a3a0a;">
+    <div style="color:#86efac; font-weight:bold; margin-bottom:8px;">🎶 Music Routes</div>
+    <div style="color:#9090b0; font-size:12px; margin-bottom:4px;"><span style="color:#86efac">/api/music/playlist</span></div>
+    <div style="color:#9090b0; font-size:12px; padding-left:10px;">mood → track list</div>
+    <div style="color:#9090b0; font-size:12px; margin-top:8px; margin-bottom:4px;"><span style="color:#86efac">/api/music/url</span></div>
+    <div style="color:#9090b0; font-size:12px; padding-left:10px;">track ID → stream URL</div>
+    <div style="color:#9090b0; font-size:12px; margin-top:8px; margin-bottom:4px;"><span style="color:#86efac">/api/music/search</span></div>
+    <div style="color:#9090b0; font-size:12px; padding-left:10px;">keyword search</div>
+  </div>
+</div>
+
+<div style="text-align:center; color:#5050a0; margin: 4px 0 8px 0;">↕ SQL / External APIs</div>
+
+<div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-left: 16px; margin-bottom: 16px;">
+  <div style="border:1px solid #3a6a3a; border-radius:8px; padding:12px; background:#0a2e0a;">
+    <div style="color:#4ade80; font-weight:bold; margin-bottom:6px;">🗄 SQLite</div>
+    <div style="color:#9090b0; font-size:12px;">sessions · topics</div>
+    <div style="color:#9090b0; font-size:12px;">progress · notes</div>
+    <div style="color:#9090b0; font-size:12px;">quiz results</div>
+  </div>
+  <div style="border:1px solid #6a3a1a; border-radius:8px; padding:12px; background:#2e1a0a;">
+    <div style="color:#fb923c; font-weight:bold; margin-bottom:6px;">🌐 Claude API</div>
+    <div style="color:#9090b0; font-size:12px;">Anthropic SDK</div>
+    <div style="color:#9090b0; font-size:12px;">Prompt caching</div>
+    <div style="color:#9090b0; font-size:12px;">Streaming + tools</div>
+  </div>
+  <div style="border:1px solid #6a1a1a; border-radius:8px; padding:12px; background:#2e0a0a;">
+    <div style="color:#f87171; font-weight:bold; margin-bottom:6px;">🎵 NetEase API</div>
+    <div style="color:#9090b0; font-size:12px;">NeteaseCloudMusicApi</div>
+    <div style="color:#9090b0; font-size:12px;">Cookie auth (QR/phone)</div>
+    <div style="color:#9090b0; font-size:12px;">Playlist + stream URLs</div>
+  </div>
+</div>
+
+<div style="color:#5050a0; font-size:12px; margin-left:16px;">└────────────────────────────────────────────────────────────┘</div>
+</div>
+
+<div class="section">
+  <h3>Music Mood Mapping (NetEase playlists)</h3>
+  <table style="width:100%; border-collapse:collapse; font-size:13px;">
+    <thead>
+      <tr style="background:#1a1a2e; color:#a78bfa;">
+        <th style="padding:10px; text-align:left; border-bottom:1px solid #2a2a4a;">Learning Mode</th>
+        <th style="padding:10px; text-align:left; border-bottom:1px solid #2a2a4a;">Music Mood</th>
+        <th style="padding:10px; text-align:left; border-bottom:1px solid #2a2a4a;">NetEase Tags / Keywords</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr style="border-bottom:1px solid #1a1a2e;">
+        <td style="padding:9px;">Deep Focus / Agent mode</td>
+        <td style="padding:9px; color:#38bdf8;">Instrumental · minimal</td>
+        <td style="padding:9px; color:#9090b0;">专注 · 纯音乐 · study</td>
+      </tr>
+      <tr style="background:#0f0f1a; border-bottom:1px solid #1a1a2e;">
+        <td style="padding:9px;">Tutor chat / Q&A</td>
+        <td style="padding:9px; color:#6bdb6b;">Lo-fi · chill</td>
+        <td style="padding:9px; color:#9090b0;">lofi · 放松 · 轻音乐</td>
+      </tr>
+      <tr style="border-bottom:1px solid #1a1a2e;">
+        <td style="padding:9px;">Quiz / recall</td>
+        <td style="padding:9px; color:#fbbf24;">Upbeat · light</td>
+        <td style="padding:9px; color:#9090b0;">欢快 · 轻快 · positive</td>
+      </tr>
+      <tr style="background:#0f0f1a;">
+        <td style="padding:9px;">Break / rest</td>
+        <td style="padding:9px; color:#c084fc;">Ambient · calm</td>
+        <td style="padding:9px; color:#9090b0;">冥想 · 自然声音 · ambient</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<p class="subtitle" style="margin-top:16px;">Mood mapping is configurable — stored in a JSON config, not hardcoded.</p>

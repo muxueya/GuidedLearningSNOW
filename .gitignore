@@ -1,52 +1,41 @@
-# Dependencies
-node_modules/
-.pnp
-.pnp.js
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
-# Build output
-dist/
-dist-ssr/
-build/
-out/
+# dependencies
+/node_modules
+/.pnp
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/versions
 
-# Environment variables
-.env
-.env.local
-.env.*.local
+# testing
+/coverage
 
-# Logs
-logs/
-*.log
+# next.js
+/.next/
+/out/
+
+# production
+/build
+
+# misc
+.DS_Store
+*.pem
+
+# debug
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
-pnpm-debug.log*
+.pnpm-debug.log*
 
-# Editor
-.vscode/
-.idea/
-*.suo
-*.ntvs*
-*.njsproj
-*.sln
-*.sw?
+# env files (can opt-in for committing if needed)
+.env*
 
-# OS
-.DS_Store
-Thumbs.db
+# vercel
+.vercel
 
-# Testing
-coverage/
-
-# TypeScript
+# typescript
 *.tsbuildinfo
-
-# Claude Code local settings
-.claude/settings.local.json
-
-# Visual brainstorming companion
-.superpowers/
-
-# Local database
-*.sqlite
-*.db
+next-env.d.ts
